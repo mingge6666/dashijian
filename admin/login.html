@@ -37,6 +37,69 @@
       </form>
     </div>
   </div>
+  <div class="modal fade" tabindex="-1" role="dialog" id="myModal">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">温馨提示：</h4>
+        </div>
+        <div class="modal-body">
+          <p>One fine body&hellip;</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+         
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+  <script>
+    //入口函数
+    $(function () {
+      //1.设置按钮点击事件
+      $('.input_sub').on('click', function (e) {
+        //2.取消默认行为
+        e.preventDefault();
+
+        //3.获取账号密码
+        var username = $('.input_txt').val().trim();
+        var passwork = $('.input_pass').val().trim();
+        //4.非空判断
+        if (username == '' || passwork == '') {
+          $('.modal-body>p').text('账号密码不能为空');
+          $('#myModal').modal()
+          return;
+        }
+
+        //5.发送请求
+        $.ajax({
+          type: 'post',
+          url: "http://localhost:8080/api/v1/admin/user/login",
+          data: {
+            username: username,
+            password: passwork
+
+          },
+          success: function (date) {
+            $('.modal-body>p').text(date.msg);
+            $('#myModal').modal();
+            localStorage.setItem('token',date.token)
+            if (date.code == 200) {
+              $('#myModal').on('hidden.bs.modal', function (e) {
+                window.location.href = 'index.html'
+})
+             
+            }
+          }
+
+
+
+        })
+        //6.跳转页面
+      })
+    })
+  </script>
 
 </body>
 
