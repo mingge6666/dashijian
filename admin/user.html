@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="css/iconfont.css">
     <link rel="stylesheet" href="css/main.css">
     <script src="./libs/jquery-1.12.4.min.js"></script>
+    <script src="./libs/http.js"></script>
 
 </head>
 
@@ -44,7 +45,7 @@
                     <label for="inputPassword3" class="col-sm-2 control-label">用户图标：</label>
                     <div class="col-sm-10">
                         <img src="images/2.jpg" alt="" class="user_pic">
-                        <input style="display: block" name="userPic" type="file" id="exampleInputFile">
+                        <input style="display: none" name="userPic" type="file" id="exampleInputFile">
                         <!-- 给label标签的for属性赋值,值是input标签的id,那这样的话点击label就相当于点击了input -->
                         <br>
                         <label for="exampleInputFile">
@@ -68,6 +69,67 @@
             </form>
         </div>
     </div>
+    <script>
+        //入口函数
+        $(function () {
+            //1.发送请求获取信息宣扬到相应的位置
+            $.ajax({
+                type: 'get',
+                url: BigNew.user_detail,
+                success: function (date) {
+                    if (date.code == 200) {
+                        console.log(date);
+                        for (var key in date.data) {
+                            $('.' + key).val(date.data[key])
+                        }
+                        $('.user_pic').attr('src', date.data.userPic)
+                    }
+
+                }
+            })
+            $('.btn-edit').on('click', function (e) {
+                e.preventDefault();
+                var fd = new FormData($('form')[0]);
+                $.ajax({
+                    type: 'post',
+                    url: BigNew.user_edit,
+                    data: fd,
+                    contentType: false,
+                    processData: false,
+                    success: function (date1) {
+                        if (date1.code == 200) {
+                            alert(date1.msg)
+                            //重新发送ajax获取数据
+                            $.ajax({
+                                type: 'get',
+                                url: BigNew.user_info,
+                                /*  headers: {
+                                    Authorization: localStorage.getItem('token')
+                                },  */
+                                success: function (date) {
+                                    if (date.code == 200) {
+                                        parent.$('.user_info>img').attr('src', date.data.userPic)
+                                        parent.$('.user_info>span>i').text( date.data.nickname)
+                                        parent.$('.user_center_link>img').attr('src', date.data.userPic)
+                                    }
+
+                                }
+
+                            })
+                        }
+                    }
+                })
+
+            })
+            $('#exampleInputFile').on('change', function () {
+                var res = $(this)[0].files[0];
+                var url = URL.createObjectURL(res);
+                $('.user_pic').attr('src', url)
+
+            })
+
+        })
+    </script>
 </body>
 
 </html>
