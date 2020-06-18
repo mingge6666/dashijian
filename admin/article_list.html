@@ -113,7 +113,7 @@
                 }
             })
             //封装函数
-            var dqpage=null;
+            var dqpage = null;
             function get(mypage, hs) {
                 $.ajax({
                     type: 'get',
@@ -132,9 +132,12 @@
                             if (date.data.data.length != 0 && hs != null) {
                                 $('#pagination').show().next().hide()
                                 hs(date);
-                            } else if (date.data.data.length == 0) {
+                            } else if (dqpage=1 && date.data.data.length == 0) {
                                 $('#pagination').hide().next().show()
 
+                            }  else if (date.data.totalPage == dqpage - 1 && date.data.data.length == 0) {
+                                dqpage -= 1;
+                                $('#pagination').twbsPagination('changeTotalPages', date.data.totalPage, dqpage)
                             }
 
                         }
@@ -153,7 +156,7 @@
                     next: '下一页',
                     last: '尾页',
                     onPageClick: function (event, page) {
-                        dqpage=page;
+                        dqpage = page;
                         get(page, null);
                     }
                 });
@@ -161,7 +164,7 @@
             //3.点击筛选按钮获取
             $('#btnSearch').on('click', function (e) {
                 e.preventDefault();
-
+                        dqpage=1
                 get(1, function (date) {
                     $('#pagination').twbsPagination('changeTotalPages', date.data.totalPage, 1)
                 })
@@ -263,7 +266,10 @@
                         success: function (date) {
                             if (date.code == 204) {
                                 alert(date.msg)
-                                get(dqpage,null)
+                                get(dqpage, function(date){
+                                    $('#pagination').twbsPagination('changeTotalPages', date.data.totalPage, dqpage)
+                                })
+                                
                             }
                         }
                     })
