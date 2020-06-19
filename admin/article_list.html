@@ -108,13 +108,13 @@
                 success: function (date) {
                     if (date.code == 200) {
                         var ret = template('moban', date)
-                        $('#selCategory').html(ret).l
+                        $('#selCategory').html(ret)
                     }
                 }
             })
             //封装函数
-            var dqpage = null;
-            function get(mypage, hs) {
+            var page1 = 1;
+            function getDate(mypage, hs) {
                 $.ajax({
                     type: 'get',
                     url: BigNew.article_query,
@@ -122,6 +122,7 @@
                         type: $('#selCategory').val(),
                         state: $('#selStatus').val(),
                         page: mypage,
+
                         perpage: 3
 
                     },
@@ -132,12 +133,12 @@
                             if (date.data.data.length != 0 && hs != null) {
                                 $('#pagination').show().next().hide()
                                 hs(date);
-                            } else if (dqpage=1 && date.data.data.length == 0) {
+                            } else if (page1 == 1 && date.data.data.length == 0) {
                                 $('#pagination').hide().next().show()
 
-                            }  else if (date.data.totalPage == dqpage - 1 && date.data.data.length == 0) {
-                                dqpage -= 1;
-                                $('#pagination').twbsPagination('changeTotalPages', date.data.totalPage, dqpage)
+                            } else if (date.data.totalPage == page1 - 1 && date.data.data.length == 0) {
+                                page1 -= 1;
+                                $('#pagination').twbsPagination('changeTotalPages', date.data.totalPage, pag1)
                             }
 
                         }
@@ -147,7 +148,7 @@
             }
 
             //2.发送请求获取内容
-            get(1, function (date) {
+            getDate(1, function (date) {
                 $('#pagination').twbsPagination({
                     totalPages: date.data.totalPage,
                     visiblePages: 7,
@@ -156,19 +157,58 @@
                     next: '下一页',
                     last: '尾页',
                     onPageClick: function (event, page) {
-                        dqpage = page;
-                        get(page, null);
+                        page1 = page;
+                        getDate(page, null);
                     }
                 });
             })
             //3.点击筛选按钮获取
             $('#btnSearch').on('click', function (e) {
                 e.preventDefault();
-                        dqpage=1
-                get(1, function (date) {
-                    $('#pagination').twbsPagination('changeTotalPages', date.data.totalPage, 1)
+                page1 = 1;
+                getDate(page1, function (date) {
+                    $('#pagination').twbsPagination('changeTotalPages', date.data.totalPage, page1)
                 })
 
+            })
+            //4.删除文章
+            $("tbody").on('click', '.delete', function () {
+                if (confirm('你确定要删除吗？')) {
+                    var id = $(this).attr('data-id');
+                    $.ajax({
+                        type: 'post',
+                        url: BigNew.article_delete,
+                        data: {
+                            id: id
+                        },
+                        success: function (date) {
+                            // console.log(date);
+
+                            if (date.code == 204) {
+                                alert(date.msg)
+                                getDate(page1, function (date) {
+                                    // console.log(date);
+                                    $('#pagination').twbsPagination('changeTotalPages', date.data.totalPage, page1)
+
+
+                                })
+                                // get(dqpage, function (date) {
+                                //     console.log(dqpage);
+                                //     console.log(date);
+
+
+                                //     $('#pagination').twbsPagination('changeTotalPages', date.data.totalPage, dqpage)
+                                // })
+
+                            }
+                        }
+                    })
+                }
+
+            })
+            //5.点击发表文章，设置样式
+            $('#release_btn').on('click', function () {
+                parent.$('ul.level02>li:eq(1)').click()
             })
             //................................................................................................
             /*     $.ajax({
@@ -253,29 +293,8 @@
                     })
 
                 }) */
-            //4.删除文章
-            $("tbody").on('click', '.delete', function () {
-                if (confirm('你确定要删除吗？')) {
-                    var id = $(this).attr('data-id');
-                    $.ajax({
-                        type: 'post',
-                        url: BigNew.article_delete,
-                        data: {
-                            id: id
-                        },
-                        success: function (date) {
-                            if (date.code == 204) {
-                                alert(date.msg)
-                                get(dqpage, function(date){
-                                    $('#pagination').twbsPagination('changeTotalPages', date.data.totalPage, dqpage)
-                                })
-                                
-                            }
-                        }
-                    })
-                }
 
-            })
+
         })
     </script>
 </body>
