@@ -208,6 +208,108 @@
     <!-- 引入模板引擎js文件 -->
     <script src="./js/template-web.js"></script>
     <script src="./js/jquery-1.12.4.min.js"></script>
+    <script id="pl_moban" type="text/html">
+        {{each data v}}
+
+        <div class="comment_detail_list">
+            <div class="person_pic fl">{{v.author[0]}}</div>
+            <div class="name_time fl"><b>{{v.author}}</b><span>{{v.date}}说:</span></div>
+            <div class="comment_text fl">
+                {{v.content}}
+            </div>
+        </div>
+        {{/each}}
+    </script>
+    <script>
+        $(function () {
+            //获取数据id
+            var id = window.location.search.split('=')[1]
+            //发送ajax请求获取数据
+            $.ajax({
+                type: 'get',
+                url: 'http://localhost:8080/api/v1/index/article',
+                data: {
+                    id: id
+                },
+                success: function (date) {
+                    $("h3.article_title").text(date.data.title);
+                    $('.breadcrumb>a:eq(1)').text(date.data.category);
+                    $('.article_info').html(date.data.author + ' 发布于 ' + date.data.date +
+                        '&nbsp;&nbsp;&nbsp;分类: ' + date.data.category +
+                        '&nbsp;&nbsp;&nbsp;阅读:(' + date.data.read + ')&nbsp;&nbsp;&nbsp;评论: (' +
+                        date.data.comments + ')')
+                    $('.article_con').html(date.data.content);
+                    if (date.data.prev == null) {
+                        $('.article_links>a:eq(0)').text('没有上一页')
+
+                    } else {
+                        $('.article_links>a:eq(0)').text(date.data.prev.title)
+                        $('.article_links>a:eq(0)').attr('href', 'article.html?id=' + date.data.prev
+                            .id)
+                    }
+                    if (date.data.next == null) {
+                        $('.article_links>a:eq(1)').text('没有下一页')
+
+                    } else {
+                        $('.article_links>a:eq(1)').text(date.data.next.title)
+                        $('.article_links>a:eq(1)').attr('href', 'article.html?id=' + date.data.next
+                            .id)
+                    }
+
+                }
+            })
+            //获取评论并渲染
+            $.ajax({
+                url: 'http://localhost:8080/api/v1/index/get_comment',
+                data: {
+                    articleId: id
+                },
+                success: function (date) {
+                    console.log(date);
+                    $('.comment_list_con').html(template('pl_moban', date))
+                    $('.comment_count').text(date.data.length + '条评论')
+
+
+
+                }
+            })
+
+            //评论
+            //点击事件
+            $('.comment_sub').on('click', function (e) {
+                e.preventDefault();
+                //获取文本
+                var username = $('.comment_name').val().trim();
+                var plcomments = $('.comment_input').val().trim();
+                if (username == '' || plcomments == '') {
+                    alert('不能为空');
+                    return;
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/api/v1/index/post_comment',
+                    data: {
+                        author: username,
+                        content: plcomments,
+                        articleId: id
+                    },
+                    success: function (date) {
+                        console.log(date);
+                        if (date.code == 201) {
+                            alert('评论成功等待审核');
+                            $('.comment_name').val('');
+                            $('.comment_input').val('');
+                        }
+
+
+
+                    }
+                })
+
+
+            })
+        })
+    </script>
 
 </body>
 
